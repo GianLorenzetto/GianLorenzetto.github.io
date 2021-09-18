@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>development on Gian Lorenzetto</title><link>/categories/development/</link><description>Recent content in development on Gian Lorenzetto</description><generator>Hugo -- gohugo.io</generator><language>en-AU</language><lastBuildDate>Thu, 14 Jul 2016 19:44:00 +0800</lastBuildDate><atom:link href="/categories/development/index.xml" rel="self" type="application/rss+xml"/><item><title>WebAPI Wildcard In Route</title><link>/posts/webpi-route-wildcard/</link><pubDate>Thu, 14 Jul 2016 19:44:00 +0800</pubDate><guid>/posts/webpi-route-wildcard/</guid><description>I recently discovered that it&amp;rsquo;s possible to include a wildcard (the * character) in a WebApi route. It looks something like:
+[Route(some/route/{*key})] This ASP.Net article has a good example (search for the &amp;lsquo;wildcard&amp;rsquo; section).
+Essentially, everything beyond the route/ part of the url will be assigned to the key variable. For example, the route
+some/route/more/parts/here?param=1
+results in
+key = &amp;#34;more/parts/here?param=1&amp;#34;; This can be useful for things like file storage and other uri params that may include folder paths or similar.</description></item></channel></rss>

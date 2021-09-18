@@ -1,0 +1,293 @@
+<!doctype html><html lang=en-au><head>
+<meta charset=utf-8>
+<meta http-equiv=content-language content="en-AU">
+<meta name=viewport content="width=device-width,initial-scale=1">
+<meta http-equiv=x-ua-compatible content="ie=edge">
+<title>Azure, TeamCity and OctopusDeploy - Part 1 &#183; Gian Lorenzetto</title>
+<meta name=title content="Azure, TeamCity and OctopusDeploy - Part 1 &#183; Gian Lorenzetto">
+<meta name=description content>
+<link rel=canonical href=/posts/azure-teamcity-and-octopusdeploy-part-1/>
+<link type=text/css rel=stylesheet href=/css/schemes/fire.min.bc9f23b39eafda60b3812264203597715edf0b788afaec5cf3293672c2de95ab1b3fe14c60d3bac20128034cde726589691bc1fe9d89fc64c30099d99ff44f44.css integrity="sha512-vJ8js56v2mCzgSJkIDWXcV7fC3iK+uxc8yk2csLelasbP+FMYNO6wgEoA0zecmWJaRvB/p2J/GTDAJnZn/RPRA==">
+<link rel=preconnect href=https://fonts.googleapis.com>
+<link rel=preconnect href=https://fonts.gstatic.com crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@200;300;400&display=swap" rel=stylesheet>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@600&display=swap" rel=stylesheet>
+<link type=text/css rel=stylesheet href=/css/compiled/main.min.ea854f5324e6f022fce8a455002c667df804536940ec2e12411e4a8cab77790e8403bc0acc8feb64a7f08e3cac0e869a37f8cba59650d1fe3f3e83fe54a49c8a.css integrity="sha512-6oVPUyTm8CL86KRVACxmffgEU2lA7C4SQR5KjKt3eQ6EA7wKzI/rZKfwjjysDoaaN/jLpZZQ0f4/PoP+VKScig==">
+<link type=text/css rel=stylesheet href=/css/custom.min.ebae0204683d51c6e9aac180c96dd9abaa5d965a475aae94e1ca1984cc2bfb02c92c605106561f7bc90793d636ece479ec8c1ff98d7ea11e7aa4deec99932a09.css integrity="sha512-664CBGg9UcbpqsGAyW3Zq6pdllpHWq6U4coZhMwr+wLJLGBRBlYfe8kHk9Y27OR57Iwf+Y1+oR56pN7smZMqCQ==">
+<link rel=apple-touch-icon sizes=180x180 href=/apple-touch-icon.png>
+<link rel=icon type=image/png sizes=32x32 href=/favicon-32x32.png>
+<link rel=icon type=image/png sizes=16x16 href=/favicon-16x16.png>
+<link rel=manifest href=/site.webmanifest>
+<meta property="og:title" content="Azure, TeamCity and OctopusDeploy - Part 1">
+<meta property="og:description" content="Recently, Mohamed (a fellow Readifarian) and I spent some time creating a complete build and deployment pipeline. Our main goal was to create a fully functional CI server in Azure, with TeamCity for builds and OctopusDeploy for deployments.
+Why? Firstly, although we both had some experience in parts of the technologies involved, neither of us had built a complete end-to-end environment, from scratch. Just sounded like too much fun!
+Secondly, during my career as a software developer one of the things I&rsquo;ve noticed is that many sites do not have a fully automated build and deployment environment.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="/posts/azure-teamcity-and-octopusdeploy-part-1/"><meta property="article:section" content="posts">
+<meta property="article:published_time" content="2015-11-22T08:44:37+00:00">
+<meta property="article:modified_time" content="2015-11-22T08:44:37+00:00">
+<meta name=twitter:card content="summary">
+<meta name=twitter:title content="Azure, TeamCity and OctopusDeploy - Part 1">
+<meta name=twitter:description content="Recently, Mohamed (a fellow Readifarian) and I spent some time creating a complete build and deployment pipeline. Our main goal was to create a fully functional CI server in Azure, with TeamCity for builds and OctopusDeploy for deployments.
+Why? Firstly, although we both had some experience in parts of the technologies involved, neither of us had built a complete end-to-end environment, from scratch. Just sounded like too much fun!
+Secondly, during my career as a software developer one of the things I&rsquo;ve noticed is that many sites do not have a fully automated build and deployment environment.">
+<script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","articleSection":"Posts","name":"Azure, TeamCity and OctopusDeploy - Part 1","headline":"Azure, TeamCity and OctopusDeploy - Part 1","description":"Recently, Mohamed (a fellow Readifarian) and I spent some time creating a complete build and deployment pipeline. Our main goal was to create a fully functional CI server in Azure, with TeamCity for builds and OctopusDeploy for deployments.\nWhy? Firstly, although we both had some experience in parts of the technologies involved, neither of us had built a complete end-to-end environment, from scratch. Just sounded like too much fun!\nSecondly, during my career as a software developer one of the things I\u0026rsquo;ve noticed is that many sites do not have a fully automated build and deployment environment.","inLanguage":"en-AU","author":{"@type":"Person","name":"Gian Lorenzetto"},"creator":{"@type":"Person","name":"Gian Lorenzetto"},"copyrightHolder":"Gian Lorenzetto","copyrightYear":"2015","dateCreated":"2015-11-22T08:44:37\u002b00:00","datePublished":"2015-11-22T08:44:37\u002b00:00","dateModified":"2015-11-22T08:44:37\u002b00:00","url":"\/posts\/azure-teamcity-and-octopusdeploy-part-1\/","wordCount":"1603","keywords":["development","Azure","TeamCity","OctopusDeploy","CI"]}</script>
+<meta name=generator content="Hugo 0.88.1">
+<meta name=author content="Gian Lorenzetto">
+<link href=https://github.com/gianlorenzetto rel=me>
+<link href=https://linkedin.com/in/gianlorenzetto rel=me>
+<link href=https://medium.com/gianlorenzetto rel=me>
+<link href=https://twitter.com/TheZenDibbler rel=me>
+</head>
+<body class="flex flex-col h-screen px-6 m-auto text-lg leading-7 bg-neutral text-neutral-900 sm:px-14 md:px-24 lg:px-32 dark:bg-neutral-800 dark:text-neutral max-w-7xl"><header class="flex justify-between py-6 font-semibold sm:py-10 text-neutral-800 dark:text-neutral">
+<div>
+<a class="hover:underline hover:underline-primary-500 hover:underline-thickness-bold hover:underline-offset-small" rel=me href=/>Gian Lorenzetto</a>
+</div>
+<nav>
+<ul class="flex flex-col list-none sm:flex-row">
+<li class="mb-1 text-right sm:mb-0 sm:mr-7 sm:last:mr-0">
+<a class="hover:underline hover:underline-primary-500 hover:underline-thickness-bold hover:underline-offset-small" href=/posts/ title=Posts>Blog</a>
+</li>
+<li class="mb-1 text-right sm:mb-0 sm:mr-7 sm:last:mr-0">
+<a class="hover:underline hover:underline-primary-500 hover:underline-thickness-bold hover:underline-offset-small" href=/tags/ title=Tags>Tags</a>
+</li>
+<li class="mb-1 text-right sm:mb-0 sm:mr-7 sm:last:mr-0">
+<a class="hover:underline hover:underline-primary-500 hover:underline-thickness-bold hover:underline-offset-small" href=/pages/about/ title="About Me">About</a>
+</li>
+</ul>
+</nav>
+</header>
+<main class=flex-grow>
+<article class=max-w-prose>
+<header>
+<h1 class="mt-0 text-4xl font-extrabold text-neutral-800 dark:text-neutral">
+Azure, TeamCity and OctopusDeploy - Part 1
+</h1>
+<div class="mt-8 mb-12 text-base text-neutral-400 dark:text-neutral-500">
+<div class="flex flex-row items-center">
+<time datetime="2015-11-22 08:44:37 +0000 UTC">22 November 2015</time><span class="px-2 text-primary-500">&#183;</span><span title="Reading time">8 mins</span>
+</div>
+</div>
+</header>
+<section class="prose dark:prose-light">
+<p>Recently, <a href=https://twitter.com/mzaatar>Mohamed</a> (a fellow Readifarian) and I spent some time creating a complete build and deployment pipeline. Our main goal was to create a fully functional <a href=https://www.thoughtworks.com/continuous-integration>CI</a> server in Azure, with <a href=https://www.jetbrains.com/teamcity/>TeamCity</a> for builds and <a href=https://octopus.com/>OctopusDeploy</a> for deployments.</p>
+<p>Why? Firstly, although we both had some experience in parts of the technologies involved, neither of us had built a complete end-to-end environment, from scratch. Just sounded like too much fun!</p>
+<p>Secondly, during my career as a software developer one of the things I&rsquo;ve noticed is that many sites do not have a fully automated build and deployment environment. This just makes life incredible difficult, for a large number of reasons, including:</p>
+<ul>
+<li>builds are not repeatable,</li>
+<li>merging long lived feature branches becomes a nightmare,</li>
+<li>creating a release is often a manual and error prone exercise, and</li>
+<li>deployment out to production is a cross-your-fingers, roller-coaster ride of disappointment.</li>
+</ul>
+<p>This post includes:</p>
+<ul>
+<li>the key learnings we had while setting up the environment, and</li>
+<li>links to some more detailed information we found useful.</li>
+</ul>
+<p>This post won&rsquo;t include:</p>
+<ul>
+<li>detailed step-by-step instructions on setting up Azure, TeamCity and OctopusDeploy (there are plenty of those, see below), or</li>
+<li>automation with PowerShell (that&rsquo;s for another post!).</li>
+</ul>
+<h2 id=tldr>tl;dr <a class=heading-anchor href=#tldr aria-label=Anchor>#</a></h2>
+<p>The executive level summary is to go read <a href=http://www.andyfrench.info/2015/05/how-to-setup-teamcity-build-server-with.html>this post by Andy French</a>. It&rsquo;s what we used as a guide and it provides great step-by-step instructions for getting a build server up and running (including Azure VM and TeamCity).</p>
+<p>From there you just need to get Octopus installed and you&rsquo;re away!</p>
+<p>Of course, there were a number of little (and not so little) issues we encountered along the way, which the rest of this post will cover.</p>
+<h2 id=creating-the-azure-vm>Creating the Azure VM <a class=heading-anchor href=#creating-the-azure-vm aria-label=Anchor>#</a></h2>
+<p>Creating a VM on Azure is remarkably simple. The basic order of things is to:</p>
+<ol>
+<li><a href=#step1>Create a Virtual Network</a></li>
+<li><a href=#step2-3>Create a Storage Account</a></li>
+<li><a href=#step2-3>Create a SQL Server DB</a></li>
+<li><a href=#step4>Create a Cloud Service</a></li>
+<li><a href=#step5>Create a Virtual Machine</a></li>
+</ol>
+<h3 id=step1>Step 1 - Virtual Network <a class=heading-anchor href=#step1 aria-label=Anchor>#</a></h3>
+<p>For our needs, setting up a <em>Virtual Network</em> was overkill, thus we skipped this step. However, if you would like to setup a multi-machine environment on the one sub-net in Azure, then you will need to do this. For us the stand-alone VM option was perfectly suitable.</p>
+<h3 id=step2-3>Step 2,3 - Storage and Database <a class=heading-anchor href=#step2-3 aria-label=Anchor>#</a></h3>
+<p>Steps 2 and 3 are optional. A <em>Storage Account</em> will be automatically created for you when you create the VM if you don&rsquo;t already have one defined.</p>
+<p>As we&rsquo;re using TeamCity, we chose to create a Azure SQL Server DB. TeamCity has it&rsquo;s own, built-in database (HSQLDB), which you could use as a trial, but it&rsquo;s not for anything else. From the <a href=https://confluence.jetbrains.com/display/TCD8/Setting+up+an+External+Database>TeamCity documentation</a>:</p>
+<blockquote>
+<p>The internal database may crash and lose all your data (e.g. on out of disk space condition). Also, internal database can become extremely slow on large data sets (say, database storage files over 200Mb). Please also note that our support does not cover any performance or database data loss issues if you are using the internal database.<br>
+In short, <strong>do not EVER use internal HSQLDB database for production TeamCity instances</strong>.</p>
+</blockquote>
+<p>Note that the emphasis above is from the TeamCity doco, not mine.</p>
+<p>Lastly, if you&rsquo;re going to be using TeamCity for non-Windows builds, it&rsquo;s strongly recommended to select a <em>collation</em> type ending in &lsquo;CS_AS&rsquo;. From the <a href=https://confluence.jetbrains.com/display/TCD9/Setting+up+an+External+Database#SettingupanExternalDatabase-MicrosoftSQLServer>TeamCity SQL Server documentation</a>:</p>
+<blockquote>
+<p>As the primary collation, it is recommended to use the collation corresponding to your locale. We also suggest using the case-sensitive collation (collation name ending with &lsquo;CS_AS&rsquo;), which is mandatory for the certain functionality (like using non-Windows build agents).</p>
+</blockquote>
+<p>And here&rsquo;s a screen capture of that setting in the classic portal:</p>
+<figure><img src=/posts/azure-teamcity-and-octopusdeploy-part-1/ss_sqldb_collation_type.png><figcaption>
+<h4>SQL Server collation setting</h4>
+</figcaption>
+</figure>
+<p>And here&rsquo;s what the setting looks like in the preview portal:</p>
+<figure><img src=/posts/azure-teamcity-and-octopusdeploy-part-1/ss_sqldb_collation_type_previewportal.png><figcaption>
+<h4>SQL Server collation setting</h4>
+</figcaption>
+</figure>
+<div class="flex px-4 py-3 rounded-md bg-primary-100 dark:bg-primary-900">
+<span class="pr-3 text-primary-400">
+<span class="relative inline-block align-text-bottom icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="exclamation-triangle" class="svg-inline--fa fa-exclamation-triangle fa-w-18" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path fill="currentcolor" d="M569.517 440.013C587.975 472.007 564.806 512 527.94 512H48.054c-36.937.0-59.999-40.055-41.577-71.987L246.423 23.985c18.467-32.009 64.72-31.951 83.154.0l239.94 416.028zM288 354c-25.405.0-46 20.595-46 46s20.595 46 46 46 46-20.595 46-46-20.595-46-46-46zm-43.673-165.346 7.418 136c.347 6.364 5.609 11.346 11.982 11.346h48.546c6.373.0 11.635-4.982 11.982-11.346l7.418-136c.375-6.874-5.098-12.654-11.982-12.654h-63.383c-6.884.0-12.356 5.78-11.981 12.654z"/></svg>
+</span>
+</span>
+<span class="no-prose dark:text-neutral-300"><strong>Note</strong> We created a SQL Server database for TeamCity, but it can use most of the popular databases. Going the SQL Server route was simplest in this instance, however <a href=https://confluence.jetbrains.com/display/TCD9/Setting+up+an+External+Database>jump into the TeamCity docs</a> to get a <a href=https://www.mysql.com>MySql</a> or <a href=http://www.postgresql.org>PostgreSQL</a> installation rocking if that suits your needs.</span>
+</div>
+<h3 id=step4>Step 4 - Cloud Service <a class=heading-anchor href=#step4 aria-label=Anchor>#</a></h3>
+<p>A <a href=https://azure.microsoft.com/en-us/documentation/articles/cloud-services-choose-me/>Cloud Service</a> is a (Azure processing unit) container for one or more virtual machines, giving you the ability to load balance your service. The image below is from the linked Cloud Services article above and gives a brief description of the different hosting models for you application:</p>
+<figure><img src=/posts/azure-teamcity-and-octopusdeploy-part-1/ss_azure_hostingmodelstable.png><figcaption>
+<h4>The three different hosting models in Azure</h4>
+</figcaption>
+</figure>
+<p>In this instance, we wanted to create our own VM, but we did not need the added features (and complexity) of the Cloud Services model. Azure makes this easy, as when you create the VM you can either:</p>
+<ul>
+<li>select an existing Cloud Service, or</li>
+<li>one will be automatically created for you.</li>
+</ul>
+<p>We took the latter option.</p>
+<p>Also note that Azure will automatically name the Cloud Service with the same name as the VM, which means they will have the same DNS name (eg, the service and the VM will both be at <code>myvm.cloudapp.net</code>). There were some articles on SO that indicated this may be a problem, but we never had an issue (except for when I forget to open the appropriate ports on the VM&rsquo;s local firewall, but that&rsquo;s another story &mldr;). In more complex, multi-VM environments this may be something to consider.</p>
+<h3 id=step5>Step 5 - Creating the Virtual Machine <a class=heading-anchor href=#step5 aria-label=Anchor>#</a></h3>
+<p>When creating a VM, you really just need to select:</p>
+<ul>
+<li>an image name,</li>
+<li>a name for the machine,</li>
+<li>the tier and size, and</li>
+<li>the region.</li>
+</ul>
+<p>If you&rsquo;re going for a build server, as we were, when selecting the image name be sure to pick one <em>with VisualStudio installed</em> &mldr; perhaps too much coffee that day. In the end we had success with both <code>Windows Server 2012</code> and <code>Windows 10</code> VM&rsquo;s.</p>
+<p>The easiest way to do this is to go to the Azure Marketplace:</p>
+<figure><img src=/posts/azure-teamcity-and-octopusdeploy-part-1/ss_azure_imagemarketplace.png><figcaption>
+<h4>Selecting an image with Visual Studio installed</h4>
+</figcaption>
+</figure>
+<p>Then just enter &lsquo;<em>Visual Studio</em>&rsquo; in the filter at the top of the page. Note that you may only see entries for Visual Studio <em>2013</em> in the drop-down:</p>
+<figure><img src=/posts/azure-teamcity-and-octopusdeploy-part-1/ss_azure_imagemarketplace_vs2013only.png><figcaption>
+<h4>Azure Marketplace for selecting an image</h4>
+</figcaption>
+</figure>
+<p>Just hit <code>Enter</code> in filter box and wait for the full list to display. From there just pick the edition and release that suits your needs:</p>
+<figure><img src=/posts/azure-teamcity-and-octopusdeploy-part-1/ss_azure_imagemarketplace_vsfulllisting.png><figcaption>
+<h4>Selecting and image name including Visual Studio</h4>
+</figcaption>
+</figure>
+<div class="flex px-4 py-3 rounded-md bg-primary-100 dark:bg-primary-900">
+<span class="pr-3 text-primary-400">
+<span class="relative inline-block align-text-bottom icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="exclamation-triangle" class="svg-inline--fa fa-exclamation-triangle fa-w-18" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path fill="currentcolor" d="M569.517 440.013C587.975 472.007 564.806 512 527.94 512H48.054c-36.937.0-59.999-40.055-41.577-71.987L246.423 23.985c18.467-32.009 64.72-31.951 83.154.0l239.94 416.028zM288 354c-25.405.0-46 20.595-46 46s20.595 46 46 46 46-20.595 46-46-20.595-46-46-46zm-43.673-165.346 7.418 136c.347 6.364 5.609 11.346 11.982 11.346h48.546c6.373.0 11.635-4.982 11.982-11.346l7.418-136c.375-6.874-5.098-12.654-11.982-12.654h-63.383c-6.884.0-12.356 5.78-11.981 12.654z"/></svg>
+</span>
+</span>
+<span class="no-prose dark:text-neutral-300"><strong>Desktop Image or Server?</strong> Good question. My general thoughts here were that if your application is designed to run on a desktop OS, then build/deploy on a desktop OS. However, Microsoft&rsquo;s licensing may have something to say about that. I imagine your mileage will vary with this one, but there is a large number of pre-defined images to choose from, all pre-installed with VisualStudio and/or the build tools.</span>
+</div>
+<p>Also, when you first create a VM be sure to allocate some decent resources, at least multi-core and plenty of RAM. If you don&rsquo;t, your RDP sessions will drive you mad with the lag. It won&rsquo;t take long to configure (well, not if you follow this advice!) and you can down-grade the machine once your done.</p>
+<p>There is also an option to select an <em>Availability Set</em>. I believe this allows you to configure fail-over into other regions / data centres, but for our purposes we just selected the default of <em>'(None)'</em>.</p>
+<p>If you&rsquo;re using the new Azure management portal, you will also see an option for the <em>Deployment Model</em>. This option is not available in the classic view and allows you to select:</p>
+<ul>
+<li><strong>Classic</strong> (also known as <em>Service Managed</em>) and is the same as using the old portal, or</li>
+<li><strong>Resource Managed</strong> this is a new option, allowing deployment of groups of resources as a single entity.</li>
+</ul>
+<p>Here&rsquo;s what it looks like in the new portal:</p>
+<figure><img src=/posts/azure-teamcity-and-octopusdeploy-part-1/ss_azurepreviewportal_deploymentmodel.png><figcaption>
+<h4>Deployment Model setting</h4>
+</figcaption>
+</figure>
+<p>Follow the link to more detail on the <a href=https://azure.microsoft.com/en-us/documentation/articles/resource-manager-deployment-model/>differences between <em>Resource</em> and <em>Service Managed</em> deployment models</a>. Note that they are not entirely compatible. From the article:</p>
+<blockquote>
+<p>The Resource Manager deployment model provides a new way to deploy and manage the services that make up your application. This new model contains important differences from the classic deployment model, and the two models are not completely compatible with each other. To simplify the deployment and management of resources, Microsoft recommends that you use Resource Manager for new resources, and, if possible, re-deploy existing resources through Resource Manager.</p>
+</blockquote>
+<p>Lastly, be sure to update the <em>Endpoints</em> configuration to add any port exceptions you may need (this was especially true for OctopusDeploy, which we put at the non-standard port 8080). This can be done when you create the VM as well as later on in the configuration settings.</p>
+<div class="flex px-4 py-3 rounded-md bg-primary-100 dark:bg-primary-900">
+<span class="pr-3 text-primary-400">
+<span class="relative inline-block align-text-bottom icon"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="exclamation-triangle" class="svg-inline--fa fa-exclamation-triangle fa-w-18" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path fill="currentcolor" d="M569.517 440.013C587.975 472.007 564.806 512 527.94 512H48.054c-36.937.0-59.999-40.055-41.577-71.987L246.423 23.985c18.467-32.009 64.72-31.951 83.154.0l239.94 416.028zM288 354c-25.405.0-46 20.595-46 46s20.595 46 46 46 46-20.595 46-46-20.595-46-46-46zm-43.673-165.346 7.418 136c.347 6.364 5.609 11.346 11.982 11.346h48.546c6.373.0 11.635-4.982 11.982-11.346l7.418-136c.375-6.874-5.098-12.654-11.982-12.654h-63.383c-6.884.0-12.356 5.78-11.981 12.654z"/></svg>
+</span>
+</span>
+<span class="no-prose dark:text-neutral-300"><p><strong>Gotcha</strong> Don&rsquo;t forget to add exceptions for the various ports to your VM Endpoints config, <em>but you must also add them to the VM OS firewall as well</em>. Yeah, that one didn&rsquo;t bite me &mldr;</p>
+</div>
+</span>
+</div>
+<h2 id=learnings>Learnings <a class=heading-anchor href=#learnings aria-label=Anchor>#</a></h2>
+<p>A few other miscellaneous things we learnt, in no particular order:</p>
+<ul>
+<li>We both started with the the new management portal (<a href=https://portal.azure.com>https://portal.azure.com</a>), but switched back to the classic view (<a href=https://manage.windowsazure.com>https://manage.windowsazure.com</a>). In general, I found the new portal a little less friendly than the classic view. It also didn&rsquo;t flow as nicely on my 13" MBP, but it might be a more pleasurable experience on a larger monitor.</li>
+<li>Be careful with your <em>usernames</em> and <em>passwords</em>. I got all &lsquo;secure&rsquo; early on and created different named accounts with random passwords for just about everything and it was a bit of a nightmare to manage. Be secure. Just be a little pragmatic and don&rsquo;t go nuts.</li>
+<li>Save. Don&rsquo;t forget to save in the Azure management portal. What was that? Oh, did you forget to save? Save. Save. Save.</li>
+</ul>
+<h2 id=conclusion>Conclusion <a class=heading-anchor href=#conclusion aria-label=Anchor>#</a></h2>
+<p>Hope that was useful. Coming up in Part 2 is TeamCity installation and setup.</p>
+</section>
+<footer class=pt-8>
+<div class="flex items-center">
+<img class="w-24 h-24 !mt-0 !mb-0 mr-4 rounded-full" src=/img/avatar.jpeg>
+<div>
+<div class="text-[0.6rem] leading-3 text-neutral-400 dark:text-neutral-500 uppercase">
+Author
+</div>
+<div class="font-semibold leading-6 text-neutral-800 dark:text-neutral-300">
+Gian Lorenzetto
+</div>
+<div class="flex flex-wrap text-neutral-400 dark:text-neutral-500">
+<a class="px-1 hover:text-primary-700 dark:hover:text-primary-400" href=https://github.com/gianlorenzetto target=_blank alt=Github rel="me noopener noreferrer"><span class="relative inline-block align-text-bottom icon"><svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="github" class="svg-inline--fa fa-github fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path fill="currentcolor" d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6.0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6.0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3.0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1.0-6.2-.3-40.4-.3-61.4.0.0-70 15-84.7-29.8.0.0-11.4-29.1-27.8-36.6.0.0-22.9-15.7 1.6-15.4.0.0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5.0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9.0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4.0 33.7-.3 75.4-.3 83.6.0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6.0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9.0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+</span>
+</a>
+<a class="px-1 hover:text-primary-700 dark:hover:text-primary-400" href=https://linkedin.com/in/gianlorenzetto target=_blank alt=Linkedin rel="me noopener noreferrer"><span class="relative inline-block align-text-bottom icon"><svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="linkedin" class="svg-inline--fa fa-linkedin fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentcolor" d="M416 32H31.9C14.3 32 0 46.5.0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6.0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3zM135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3.0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2.0 38.5 17.3 38.5 38.5.0 21.3-17.2 38.5-38.5 38.5zm282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6.0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2.0 79.7 44.3 79.7 101.9V416z"/></svg>
+</span>
+</a>
+<a class="px-1 hover:text-primary-700 dark:hover:text-primary-400" href=https://medium.com/gianlorenzetto target=_blank alt=Medium rel="me noopener noreferrer"><span class="relative inline-block align-text-bottom icon"><svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="medium" class="svg-inline--fa fa-medium fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentcolor" d="M0 32v448h448V32H0zm372.2 106.1-24 23c-2.1 1.6-3.1 4.2-2.7 6.7v169.3c-.4 2.6.6 5.2 2.7 6.7l23.5 23v5.1h-118V367l24.3-23.6c2.4-2.4 2.4-3.1 2.4-6.7V199.8l-67.6 171.6h-9.1L125 199.8v115c-.7 4.8 1 9.7 4.4 13.2l31.6 38.3v5.1H71.2v-5.1l31.6-38.3c3.4-3.5 4.9-8.4 4.1-13.2v-133c.4-3.7-1-7.3-3.8-9.8L75 138.1V133h87.3l67.4 148L289 133.1h83.2v5z"/></svg>
+</span>
+</a>
+<a class="px-1 hover:text-primary-700 dark:hover:text-primary-400" href=https://twitter.com/TheZenDibbler target=_blank alt=Twitter rel="me noopener noreferrer"><span class="relative inline-block align-text-bottom icon"><svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="twitter" class="svg-inline--fa fa-twitter fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentcolor" d="M459.37 151.716c.325 4.548.325 9.097.325 13.645.0 138.72-105.583 298.558-298.558 298.558-59.452.0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055.0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421.0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391.0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04.0-57.828 46.782-104.934 104.934-104.934 30.213.0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/></svg>
+</span>
+</a>
+</div>
+</div>
+</div>
+<section class="flex flex-row flex-wrap justify-center pt-4 text-xl">
+<a class="bg-neutral-300 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800 m-1 hover:bg-primary-500 hover:text-neutral rounded min-w-[2.4rem] inline-block text-center p-1" href="https://twitter.com/intent/tweet/?url=/posts/azure-teamcity-and-octopusdeploy-part-1/&text=Azure,%20TeamCity%20and%20OctopusDeploy%20-%20Part%201" title="Tweet on Twitter"><span class="relative inline-block align-text-bottom icon"><svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="twitter" class="svg-inline--fa fa-twitter fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="currentcolor" d="M459.37 151.716c.325 4.548.325 9.097.325 13.645.0 138.72-105.583 298.558-298.558 298.558-59.452.0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055.0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421.0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391.0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04.0-57.828 46.782-104.934 104.934-104.934 30.213.0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/></svg>
+</span>
+</a>
+<a class="bg-neutral-300 text-neutral-700 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-primary-400 dark:hover:text-neutral-800 m-1 hover:bg-primary-500 hover:text-neutral rounded min-w-[2.4rem] inline-block text-center p-1" href="https://www.linkedin.com/shareArticle?mini=true&url=/posts/azure-teamcity-and-octopusdeploy-part-1/&title=Azure,%20TeamCity%20and%20OctopusDeploy%20-%20Part%201" title="Share on LinkedIn"><span class="relative inline-block align-text-bottom icon"><svg aria-hidden="true" focusable="false" data-prefix="fab" data-icon="linkedin" class="svg-inline--fa fa-linkedin fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentcolor" d="M416 32H31.9C14.3 32 0 46.5.0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6.0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3zM135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3.0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2.0 38.5 17.3 38.5 38.5.0 21.3-17.2 38.5-38.5 38.5zm282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6.0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2.0 79.7 44.3 79.7 101.9V416z"/></svg>
+</span>
+</a>
+</section>
+<div class="pt-8 article-pagination">
+<hr class="border-dotted border-neutral-300 dark:border-neutral-600">
+<div class="flex justify-between pt-3">
+<span>
+<a class=flex href=/posts/yow-2015-highlights/>
+<span class="mr-3 article-pagination-direction">&larr;</span>
+<span class="flex flex-col">
+<span class=article-pagination-title>YOW! 2015 Highlights</span>
+<span class="-mt-1 text-xs text-neutral-400 dark:text-neutral-500">
+<time datetime="2015-11-22 08:44:37 +0000 UTC">22 November 2015</time>
+</span>
+</span>
+</a>
+</span>
+<span>
+<a class="flex text-right" href=/posts/working-in-a-difficult-environment/>
+<span class="flex flex-col">
+<span class=article-pagination-title>Working in a Difficult Environment</span>
+<span class="-mt-1 text-xs text-neutral-400 dark:text-neutral-500">
+<time datetime="2015-11-22 08:44:37 +0000 UTC">22 November 2015</time>
+</span>
+</span>
+<span class="ml-3 article-pagination-direction">&rarr;</span>
+</a>
+</span>
+</div>
+</div>
+</footer>
+</article>
+</main><footer class="py-10 text-sm">
+<p class="text-neutral-400 dark:text-neutral-500">
+&copy;
+2021
+Gian Lorenzetto
+</p>
+<p class="text-xs text-neutral-300 dark:text-neutral-600">
+Powered by
+<a class="hover:underline hover:underline-primary-300 hover:text-primary-400" href=https://gohugo.io/ target=_blank rel="noopener noreferrer">Hugo</a>
+&
+<a class="hover:underline hover:underline-primary-300 hover:text-primary-400" href=https://git.io/hugo-congo target=_blank rel="noopener noreferrer">Congo</a>
+</p>
+</footer>
+</body>
+</html>
