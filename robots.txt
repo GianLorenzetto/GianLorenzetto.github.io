@@ -1,0 +1,3 @@
+User-agent: *
+Disallow:
+Sitemap: https://gianlorenzetto.github.io/sitemap.xml
